@@ -1,0 +1,49 @@
+---
+driver:
+  name: vagrant
+  linked_clones: true
+  gui: false
+  communicator: winrm
+  customize:
+    cpus: 2
+    memory: 4096
+
+provisioner:
+  name: dsc
+
+transport:
+  name: winrm
+
+verifier:
+  name: pester
+
+platforms:
+  - name: windows-2008r2-wmf4
+    driver:
+      box: smurawski/2012R2-wmf4
+  - name: windows-2012r2-wmf4
+    driver:
+      box: smurawski/2012R2-wmf4
+      network: 
+        - ["forwarded_port", {guest: 80, host: 8080}]
+    provisioner:
+      dsc_local_configuration_manager_version: wmf4_with_update
+  - name: windows-2012r2-wmf5
+    driver:
+      box: smurawski/2012R2-wmf5
+      network:
+        - ["forwarded_port", {guest: 80, host: 8081}]
+    provisioner:
+      dsc_local_configuration_manager_version: wmf5
+
+
+suites:
+  - name: Sample_xWebsite_NewWebsite
+    provisioner:
+      configuration_script: Sample_xWebsite_NewWebsite.ps1
+      configuration_data:
+        AllNodes:
+          - nodename: localhost
+            websitename: test
+            destinationpath: c:/sites/BakeryWebsite
+            sourceurl: 'http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-00-63-74-metablogapi/3124.Demo_5F00_WindowServer2012R2_2D00_Preview_5F00_4677B514.zip'

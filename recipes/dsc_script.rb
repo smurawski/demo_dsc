@@ -51,7 +51,7 @@ node['iis_demo']['sites'].each do |site_name, site_data|
         BindingInfo = MSFT_xWebBindingInformation {
                         IPAddress = '*'
                         Port = #{site_data['port']}
-                        Protocol = 'http' 
+                        Protocol = 'http'
                       }
       }
     SITESDSC
@@ -65,4 +65,12 @@ node['iis_demo']['sites'].each do |site_name, site_data|
       port: site_data['port']
     )
   end
+
+  powershell_script 'Open Firewall' do
+    code <<-EOH
+     New-NetFirewallRule -displayname '#{site_name}' -Name '#{site_name}' -Enabled True -Direction Inbound -Action Allow -Protocol TCP -LocalPort #{site_data['port']}
+    EOH
+    not_if "(Get-NetFirewallrule -Direction inbound -Action allow | Get-NetFirewallPortFilter | where localport -eq #{site_data['port']}) -ne $null"
+  end
+
 end
